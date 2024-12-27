@@ -28,7 +28,7 @@
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
-      <PackageReference Include="Refit" Version="7.0.0" />
+      <PackageReference Include="Refit" Version="7.2.22" />
       <PackageReference Include="Refit.Newtonsoft.Json" Version="7.0.0" />
       <PackageReference Include="Refit.Xml" Version="7.0.0" />
       <PackageReference Include="Scriban.Signed" Version="5.10.0" />
