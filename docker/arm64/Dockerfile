@@ -1,10 +1,33 @@
 ﻿FROM mcr.microsoft.com/dotnet/aspnet:8.0-jammy-arm64v8 AS dotnet-runtime
 
-FROM jasongdove/ersatztv-ffmpeg:7.0-arm64 AS runtime-base
+FROM lscr.io/linuxserver/jellyfin:latest AS runtime-base
+
+RUN cd /tmp && \
+    curl -fsSLO https://github.com/tsukumijima/libmali-rockchip/releases/download/v1.9-1-55611b0/libmali-valhall-g610-g13p0-gbm_1.9-1_arm64.deb && \
+    dpkg -i libmali-valhall-g610-g13p0-gbm_1.9-1_arm64.deb && \
+    rm -f libmali-valhall-g610-g13p0-gbm_1.9-1_arm64.deb && \
+    apt-get update && \
+    apt-get install --yes jellyfin-ffmpeg7 && \
+    apt-get -y autoremove && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && apt-get --yes install fontconfig nano
+RUN groupadd -g 110 render && \
+    groupadd -g 4000 ersatztv && \
+    useradd -u 4003 -g 4000 -G 44,110 -s /usr/sbin/nologin ersatztv && \
+    mkdir /transcode && \
+    chown -R ersatztv:ersatztv /config /transcode
+
+COPY docker/arm64/ffmpeg-script /usr/lib/jellyfin-ffmpeg
+RUN mv /usr/lib/jellyfin-ffmpeg/ffmpeg /usr/lib/jellyfin-ffmpeg/ffmpeg2 && \
+    mv /usr/lib/jellyfin-ffmpeg/ffmpeg-script /usr/lib/jellyfin-ffmpeg/ffmpeg && \
+    chmod a+x /usr/lib/jellyfin-ffmpeg/ffmpeg
+
+ENV PATH="$PATH:/usr/lib/jellyfin-ffmpeg"
+
 COPY --from=dotnet-runtime /usr/share/dotnet /usr/share/dotnet
 
 # https://hub.docker.com/_/microsoft-dotnet
-FROM mcr.microsoft.com/dotnet/sdk:8.0-jammy-amd64 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0-jammy-arm64v8 AS build
 RUN apt-get update && apt-get install -y ca-certificates gnupg
 WORKDIR /source
 
