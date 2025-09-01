@@ -21,8 +21,11 @@ public static class FourCC
 
     public static readonly List<string> AllRkmpp =
     [
+        Av1,
         H264,
         Hevc,
+        Mpeg2Video,
+        Mpeg4,
         Vp9
     ];
 }
