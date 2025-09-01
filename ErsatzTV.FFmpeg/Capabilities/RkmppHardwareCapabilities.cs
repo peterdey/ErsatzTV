@@ -8,7 +8,7 @@ public class RkmppHardwareCapabilities : IHardwareCapabilities
         string videoFormat,
         Option<string> videoProfile,
         Option<IPixelFormat> maybePixelFormat,
-        bool isHdr) => FFmpegCapability.Software;
+        bool isHdr) => FFmpegCapability.Hardware;
 
     public FFmpegCapability CanEncode(
         string videoFormat,
