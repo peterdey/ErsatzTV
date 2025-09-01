@@ -61,6 +61,11 @@ public class
             result.Add(HardwareAccelerationKind.VideoToolbox);
         }
 
+        if (ffmpegCapabilities.HasHardwareAcceleration(HardwareAccelerationMode.Rkmpp))
+        {
+            result.Add(HardwareAccelerationKind.Rkmpp);
+        }
+
         if (ffmpegCapabilities.HasHardwareAcceleration(HardwareAccelerationMode.Amf))
         {
             result.Add(HardwareAccelerationKind.Amf);

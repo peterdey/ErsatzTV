@@ -7,6 +7,7 @@ public record FFmpegKnownHardwareAcceleration
     public static readonly FFmpegKnownHardwareAcceleration Qsv = new("qsv");
     public static readonly FFmpegKnownHardwareAcceleration Vaapi = new("vaapi");
     public static readonly FFmpegKnownHardwareAcceleration VideoToolbox = new("videotoolbox");
+    public static readonly FFmpegKnownHardwareAcceleration Rkmpp = new("rkmpp");
     public static readonly FFmpegKnownHardwareAcceleration OpenCL = new("opencl");
     public static readonly FFmpegKnownHardwareAcceleration Vulkan = new("vulkan");
 
@@ -21,6 +22,7 @@ public record FFmpegKnownHardwareAcceleration
         Qsv.Name,
         Vaapi.Name,
         VideoToolbox.Name,
+        Rkmpp.Name,
         OpenCL.Name,
         Vulkan.Name
     ];

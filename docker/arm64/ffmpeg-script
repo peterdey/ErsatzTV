@@ -1,31 +1,4 @@
 #!/bin/bash
 
-args=( "$@" )
-for (( i=0; i <= "$#"; i++ )); do
-    #echo -en "${i}\t"
-    #echo "${args[${i}]}"
-    if [ "${args[${i}]}" == "libx264" ]; then
-        args[${i}]="h264_rkmpp"
-    elif [ "${args[${i}]}" == "vp9" ]; then
-        args[${i}]="vp9_rkmpp"
-    elif [ "${args[${i}]}" == "h264" ]; then
-        #args[${i}]="h264_rkmpp"
-        X=1
-    elif [[ "${args[${i}]}" =~ "scale=" ]]; then
-        X="${args[${i}]//scale=/scale_rkrga=}"
-        X="${X//:flags=fast_bilinear/}"
-        #args[${i}]=$X
-        #echo "...scale: $X" >> /tmp//ffmpeg.log
-    fi
-done
-
-# X="${X//libx264/h264_rkmpp}"
-
-
-args=( "-hwaccel" "rkmpp" "${args[@]}" )
-#args=( "-hwaccel_output_format" "drm_prime" "-afbc" "rga" "${args[@]}" )
-
-set -- "${args[@]}"
-
 echo "$0" "$*" >> /tmp//ffmpeg.log
 /usr/lib/jellyfin-ffmpeg/ffmpeg2 "$@"

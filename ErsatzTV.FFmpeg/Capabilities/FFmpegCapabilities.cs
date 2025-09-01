@@ -41,6 +41,7 @@ public class FFmpegCapabilities : IFFmpegCapabilities
             HardwareAccelerationMode.Qsv => FFmpegKnownHardwareAcceleration.Qsv,
             HardwareAccelerationMode.Vaapi => FFmpegKnownHardwareAcceleration.Vaapi,
             HardwareAccelerationMode.VideoToolbox => FFmpegKnownHardwareAcceleration.VideoToolbox,
+            HardwareAccelerationMode.Rkmpp => FFmpegKnownHardwareAcceleration.Rkmpp,
             HardwareAccelerationMode.OpenCL => FFmpegKnownHardwareAcceleration.OpenCL,
             HardwareAccelerationMode.Vulkan => FFmpegKnownHardwareAcceleration.Vulkan,
             _ => Option<FFmpegKnownHardwareAcceleration>.None

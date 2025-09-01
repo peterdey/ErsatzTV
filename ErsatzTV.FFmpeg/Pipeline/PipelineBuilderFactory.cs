@@ -116,6 +116,21 @@ public class PipelineBuilderFactory : IPipelineBuilderFactory
                     fontsFolder,
                     _logger),
 
+            HardwareAccelerationMode.Rkmpp when capabilities is not NoHardwareCapabilities => new
+                RkmppPipelineBuilder(
+                    ffmpegCapabilities,
+                    capabilities,
+                    hardwareAccelerationMode,
+                    videoInputFile,
+                    audioInputFile,
+                    watermarkInputFile,
+                    subtitleInputFile,
+                    concatInputFile,
+                    graphicsEngineInput,
+                    reportsFolder,
+                    fontsFolder,
+                    _logger),
+
             HardwareAccelerationMode.Amf when capabilities is not NoHardwareCapabilities => new AmfPipelineBuilder(
                 ffmpegCapabilities,
                 capabilities,

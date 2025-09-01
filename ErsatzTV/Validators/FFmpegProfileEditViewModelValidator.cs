@@ -34,6 +34,12 @@ public class FFmpegProfileEditViewModelValidator : AbstractValidator<FFmpegProfi
         FFmpegProfileVideoFormat.Hevc
     ];
 
+    private static readonly List<FFmpegProfileVideoFormat> RkmppFormats =
+    [
+        FFmpegProfileVideoFormat.H264,
+        FFmpegProfileVideoFormat.Hevc
+    ];
+
     private static readonly List<FFmpegProfileVideoFormat> AmfFormats =
     [
         FFmpegProfileVideoFormat.H264,
@@ -83,6 +89,14 @@ public class FFmpegProfileEditViewModelValidator : AbstractValidator<FFmpegProfi
             {
                 RuleFor(x => x.VideoFormat).Must(c => VideoToolboxFormats.Contains(c))
                     .WithMessage("VideoToolbox supports formats (h264, hevc)");
+            });
+
+        When(
+            x => x.HardwareAcceleration == HardwareAccelerationKind.Rkmpp,
+            () =>
+            {
+                RuleFor(x => x.VideoFormat).Must(c => RkmppFormats.Contains(c))
+                    .WithMessage("Rkmpp supports formats (h264, hevc)");
             });
 
         When(

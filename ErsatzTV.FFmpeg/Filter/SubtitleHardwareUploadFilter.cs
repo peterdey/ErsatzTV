@@ -25,6 +25,9 @@ public class SubtitleHardwareUploadFilter : BaseFilter
             // leave videotoolbox in software since we use a software overlay filter
             HardwareAccelerationMode.VideoToolbox => string.Empty,
 
+            // Rkmpp has a hardware overlay filter, but we don't configure it yet
+            HardwareAccelerationMode.Rkmpp => string.Empty,
+
             // leave amf in software since we use a software overlay filter
             HardwareAccelerationMode.Amf => string.Empty,
 
