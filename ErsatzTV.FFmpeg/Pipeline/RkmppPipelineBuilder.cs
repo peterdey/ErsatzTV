@@ -3,6 +3,7 @@ using ErsatzTV.FFmpeg.Decoder;
 using ErsatzTV.FFmpeg.Encoder;
 using ErsatzTV.FFmpeg.Encoder.Rkmpp;
 using ErsatzTV.FFmpeg.Filter;
+using ErsatzTV.FFmpeg.Filter.Rkmpp;
 using ErsatzTV.FFmpeg.Format;
 using ErsatzTV.FFmpeg.GlobalOption.HardwareAcceleration;
 using ErsatzTV.FFmpeg.OutputFormat;
@@ -43,6 +44,7 @@ public class RkmppPipelineBuilder : SoftwarePipelineBuilder
     {
         _hardwareCapabilities = hardwareCapabilities;
         _logger = logger;
+        _logger.LogDebug("Using RkmppPipelineBuilder");
     }
 
     protected override FFmpegState SetAccelState(
@@ -66,11 +68,13 @@ public class RkmppPipelineBuilder : SoftwarePipelineBuilder
         if (ffmpegState.OutputFormat is OutputFormatKind.Nut)
         {
             encodeCapability = FFmpegCapability.Software;
+            _logger.LogDebug("Using software encoder");
         }
 
         if (decodeCapability is FFmpegCapability.Hardware)
         {
             pipelineSteps.Add(new RkmppHardwareAccelerationOption());
+            _logger.LogDebug("Using RkmppHardwareAccelerationOption decoder");
         }
 
         // disable hw accel if decoder/encoder isn't supported
@@ -133,7 +137,7 @@ public class RkmppPipelineBuilder : SoftwarePipelineBuilder
         {
             if (!videoStream.ColorParams.IsBt709)
             {
-                // _logger.LogDebug("Adding colorspace filter");
+                _logger.LogDebug("Adding colorspace filter");
                 var colorspace = new ColorspaceFilter(currentState, videoStream, pixelFormat);
                 currentState = colorspace.NextState(currentState);
                 result.Add(colorspace);
@@ -153,5 +157,63 @@ public class RkmppPipelineBuilder : SoftwarePipelineBuilder
         }
 
         return result;
+    }
+
+    private static FrameState SetScale(
+        VideoInputFile videoInputFile,
+        VideoStream videoStream,
+        PipelineContext context,
+        FFmpegState ffmpegState,
+        FrameState desiredState,
+        FrameState currentState)
+    {
+        IPipelineFilterStep scaleStep;
+        var temp = false;
+
+        /* if (currentState.ScaledSize != desiredState.ScaledSize && ffmpegState is
+            {
+                DecoderHardwareAccelerationMode: HardwareAccelerationMode.None,
+                EncoderHardwareAccelerationMode: HardwareAccelerationMode.None
+            } && context is { HasWatermark: false, HasSubtitleOverlay: false, ShouldDeinterlace: false } ||
+            ffmpegState.DecoderHardwareAccelerationMode != HardwareAccelerationMode.Rkmpp) */
+        if (temp)
+        {
+            scaleStep = new ScaleFilter(
+                currentState,
+                desiredState.ScaledSize,
+                desiredState.PaddedSize,
+                desiredState.CroppedSize,
+                VideoStream.IsAnamorphicEdgeCase);
+        }
+        else
+        {
+            scaleStep = new ScaleRkmppFilter(
+                currentState with
+                {
+                    PixelFormat = //context.HasWatermark ||
+                    //context.HasSubtitleOverlay ||
+                    // (desiredState.ScaledSize != desiredState.PaddedSize) ||
+                    // context.HasSubtitleText ||
+                    ffmpegState is
+                    {
+                        DecoderHardwareAccelerationMode: HardwareAccelerationMode.Rkmpp,
+                        EncoderHardwareAccelerationMode: HardwareAccelerationMode.None
+                    }
+                        ? desiredState.PixelFormat.Map(pf => (IPixelFormat)new PixelFormatNv12(pf.Name))
+                        : Option<IPixelFormat>.None
+                },
+                desiredState.ScaledSize,
+                desiredState.PaddedSize,
+                desiredState.CroppedSize,
+                VideoStream.IsAnamorphicEdgeCase);
+        }
+
+        if (!string.IsNullOrWhiteSpace(scaleStep.Filter))
+        {
+            currentState = scaleStep.NextState(currentState);
+            videoInputFile.FilterSteps.Add(scaleStep);
+        }
+
+        return currentState;
     }
 }
