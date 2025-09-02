@@ -595,7 +595,7 @@ public class QsvPipelineBuilder : SoftwarePipelineBuilder
         return currentState;
     }
 
-    private static FrameState SetScale(
+    protected override FrameState SetScale(
         VideoInputFile videoInputFile,
         VideoStream videoStream,
         PipelineContext context,

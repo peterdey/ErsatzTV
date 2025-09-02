@@ -108,7 +108,7 @@ public class SoftwarePipelineBuilder : PipelineBuilderBase
         {
             SetDeinterlace(videoInputFile, context, currentState);
 
-            currentState = SetScale(videoInputFile, videoStream, desiredState, currentState);
+            currentState = SetScale(videoInputFile, videoStream, context, ffmpegState, desiredState, currentState);
             currentState = SetTonemap(videoInputFile, videoStream, ffmpegState, desiredState, currentState);
             currentState = SetPad(videoInputFile, videoStream, desiredState, currentState);
             currentState = SetCrop(videoInputFile, desiredState, currentState);
@@ -370,9 +370,11 @@ public class SoftwarePipelineBuilder : PipelineBuilderBase
         return currentState;
     }
 
-    private static FrameState SetScale(
+    protected virtual FrameState SetScale(
         VideoInputFile videoInputFile,
         VideoStream videoStream,
+        PipelineContext context,
+        FFmpegState ffmpegState,
         FrameState desiredState,
         FrameState currentState)
     {

@@ -159,7 +159,7 @@ public class RkmppPipelineBuilder : SoftwarePipelineBuilder
         return result;
     }
 
-    private static FrameState SetScale(
+    protected override FrameState SetScale(
         VideoInputFile videoInputFile,
         VideoStream videoStream,
         PipelineContext context,
