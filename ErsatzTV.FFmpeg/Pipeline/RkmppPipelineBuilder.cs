@@ -135,25 +135,44 @@ public class RkmppPipelineBuilder : SoftwarePipelineBuilder
 
         foreach (IPixelFormat pixelFormat in desiredPixelFormat)
         {
+            IPixelFormat format = pixelFormat;
+
+            if (pixelFormat is PixelFormatNv12 nv12)
+            {
+                foreach (IPixelFormat pf in AvailablePixelFormats.ForPixelFormat(nv12.Name, null))
+                {
+                    format = pf;
+                }
+            }
+
             if (!videoStream.ColorParams.IsBt709)
             {
                 _logger.LogDebug("Adding colorspace filter");
-                var colorspace = new ColorspaceFilter(currentState, videoStream, pixelFormat);
+                var colorspace = new ColorspaceFilter(
+                    currentState,
+                    videoStream,
+                    format);
                 currentState = colorspace.NextState(currentState);
                 result.Add(colorspace);
             }
 
-            if (currentState.PixelFormat.Map(f => f.FFmpegName) != pixelFormat.FFmpegName)
+            if (currentState.PixelFormat.Map(f => f.FFmpegName) != format.FFmpegName)
             {
                 _logger.LogDebug(
                     "Format {A} doesn't equal {B}",
                     currentState.PixelFormat.Map(f => f.FFmpegName),
-                    pixelFormat.FFmpegName);
+                    format.FFmpegName);
 
-                //result.Add(new PixelFormatFilter(pixelFormat));
+                // Try to force NV12 format
+                if (format is PixelFormatYuv420P)
+                {
+                    _logger.LogDebug("Pixel Format is yuv420p; changing to nv12");
+                    format = new PixelFormatNv12(format.Name);
+                }
+
+                _logger.LogDebug("Adding PixelFormatOutputOption: {PixelFormat}", format);
+                pipelineSteps.Add(new PixelFormatOutputOption(format));
             }
-
-            pipelineSteps.Add(new PixelFormatOutputOption(pixelFormat));
         }
 
         return result;

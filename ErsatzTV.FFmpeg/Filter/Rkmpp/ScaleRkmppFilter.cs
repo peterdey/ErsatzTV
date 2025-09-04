@@ -9,6 +9,7 @@ public class ScaleRkmppFilter : BaseFilter
     private readonly bool _isAnamorphicEdgeCase;
     private readonly FrameSize _paddedSize;
     private readonly FrameSize _scaledSize;
+    private FrameDataLocation _nextFrameDataLocation = FrameDataLocation.Unknown;
 
     public ScaleRkmppFilter(
         FrameState currentState,
@@ -22,6 +23,7 @@ public class ScaleRkmppFilter : BaseFilter
         _paddedSize = paddedSize;
         _croppedSize = croppedSize;
         _isAnamorphicEdgeCase = isAnamorphicEdgeCase;
+        _nextFrameDataLocation = _currentState.FrameDataLocation;
     }
 
     public override string Filter
@@ -51,6 +53,7 @@ public class ScaleRkmppFilter : BaseFilter
                 string squareScale = string.Empty;
                 var targetSize = $"{_paddedSize.Width}:{_paddedSize.Height}";
                 string format = string.Empty;
+                string dlFormat = $",format=nv12";  // Yep, this is hacky.
                 foreach (IPixelFormat pixelFormat in _currentState.PixelFormat)
                 {
                     format = $":format={pixelFormat.FFmpegName}";
@@ -58,15 +61,18 @@ public class ScaleRkmppFilter : BaseFilter
 
                 if (_isAnamorphicEdgeCase)
                 {
-                    squareScale = $"scale_rkrga=iw:sar*ih{format},setsar=1,";
+                    squareScale = $"scale_rkrga=iw:sar*ih{format},hwdownload{dlFormat},setsar=1,";
+                    _nextFrameDataLocation = FrameDataLocation.Software;
                 }
                 else if (_currentState.IsAnamorphic)
                 {
-                    squareScale = $"scale_rkrga=iw*sar:ih{format},setsar=1,";
+                    squareScale = $"scale_rkrga=iw*sar:ih{format},hwdownload{dlFormat},setsar=1,";
+                    _nextFrameDataLocation = FrameDataLocation.Software;
                 }
                 else
                 {
-                    aspectRatio += ",setsar=1";
+                    aspectRatio += $",hwdownload{dlFormat},setsar=1";
+                    _nextFrameDataLocation = FrameDataLocation.Software;
                 }
 
                 scale = $"{squareScale}scale_rkrga={targetSize}:force_divisible_by=2{format}{aspectRatio}";
@@ -79,7 +85,7 @@ public class ScaleRkmppFilter : BaseFilter
 
             if (!string.IsNullOrWhiteSpace(scale))
             {
-                return $"format=nv12|p010le,hwupload,{scale}";
+                return $"format=nv12|nv15,hwupload,{scale}";
             }
 
             return string.Empty;
@@ -90,7 +96,8 @@ public class ScaleRkmppFilter : BaseFilter
     {
         ScaledSize = _scaledSize,
         PaddedSize = _scaledSize,
-        FrameDataLocation = FrameDataLocation.Hardware,
-        IsAnamorphic = false // this filter always outputs square pixels
+        FrameDataLocation = _nextFrameDataLocation,
+        IsAnamorphic = false, // this filter always outputs square pixels
+        PixelFormat = (_nextFrameDataLocation == FrameDataLocation.Software) ? new PixelFormatNv12("nv12") : currentState.PixelFormat
     };
 }
