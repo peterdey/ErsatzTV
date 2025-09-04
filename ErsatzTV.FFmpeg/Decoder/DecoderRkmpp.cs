@@ -18,7 +18,7 @@ public class DecoderRkmpp : DecoderBase
         return currentState.PixelFormat.Match(
             pixelFormat => pixelFormat.BitDepth == 8
                 ? nextState with { PixelFormat = new PixelFormatNv12(pixelFormat.Name) }
-                : nextState with { PixelFormat = new PixelFormatP010() },
+                : nextState with { PixelFormat = new PixelFormatNv15(pixelFormat.Name) },
             () => nextState);
     }
 }
